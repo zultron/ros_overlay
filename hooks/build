@@ -1,0 +1,14 @@
+#!/bin/bash -xe
+
+# BASE_REPO should be set in the Docker Hub automated build settings
+#BASE_REPO=
+
+LATEST_TAG=$(DOCKER_REPO=$BASE_REPO ./list-images.py 2>/dev/null | \
+                 sort --version-sort | tail -1 )
+
+IMAGE_BASE=$BASE_REPO:$LATEST_TAG
+NEW_IMAGE=$DOCKER_REPO:$LATEST_TAG
+
+echo NEW_IMAGE=$NEW_IMAGE > new_image.sh
+
+docker build --build-arg IMAGE_BASE=$IMAGE_BASE -f $DOCKERFILE_PATH -t $NEW_IMAGE .
