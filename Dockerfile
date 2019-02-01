@@ -22,4 +22,8 @@ RUN apt-get update && \
     apt-get install -y \
         # emacsclient
         emacs25-bin-common \
+        # lcnc
+        intltool \
+        tclx8.4 \
+        libreadline-gplv2-dev \
     && apt-get clean
