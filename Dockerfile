@@ -17,7 +17,6 @@ RUN bash -c "( \
             ${DEBIAN_SUITE}/updates main; \
         ) | tee /etc/apt/sources.list"
 
-# Emacs
 RUN apt-get update && \
     apt-get install -y \
         # emacsclient
@@ -26,4 +25,11 @@ RUN apt-get update && \
         intltool \
         tclx8.4 \
         libreadline-gplv2-dev \
+        netcat \
+        # MK
+        libcmocka-dev \
+        # Travis
+        ruby-dev \
     && apt-get clean
+
+RUN gem install travis
