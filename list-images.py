@@ -108,7 +108,7 @@ class DockerRegistryAuth(object):
     def get_token(self, access='pull'):
         now = time.time()
         if self._tokens.get(self.scope(access),{}).get('expires',0) > now:
-            print "Reusing token for scope %s" % self.scope(access)
+            # print "Reusing token for scope %s" % self.scope(access)
             return self._tokens[self.scope(access)]['token']
 
         spec = "GET /token?service=<auth_service>&scope=<scope>&offline_token=1"
@@ -116,7 +116,7 @@ class DockerRegistryAuth(object):
                              headers=self.auth_basic_headers,
                              api_domain=self.auth_domain)
 
-        print "Got new token for scope %s" % self.scope(access) # FIXME
+        # print "Got new token for scope %s" % self.scope(access) # FIXME
 
         token['expires'] = now + token['expires_in'] - 10 # Fudge time
         self._tokens[self.scope(access)] = token
