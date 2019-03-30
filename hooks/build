@@ -11,4 +11,9 @@ NEW_IMAGE=$DOCKER_REPO:$LATEST_TAG
 
 echo NEW_IMAGE=$NEW_IMAGE > new_image.sh
 
-docker build --build-arg IMAGE_BASE=$IMAGE_BASE -f $DOCKERFILE_PATH -t $NEW_IMAGE .
+docker build \
+       --build-arg IMAGE_BASE=$IMAGE_BASE \
+       --label version=0.1.0 \
+       -f $DOCKERFILE_PATH \
+       -t $NEW_IMAGE \
+       .
