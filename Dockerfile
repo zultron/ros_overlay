@@ -30,6 +30,8 @@ RUN apt-get update && \
         libcmocka-dev \
         # Travis
         ruby-dev \
+        # Overlay
+        python-requests \
     && apt-get clean
 
 RUN gem install travis
