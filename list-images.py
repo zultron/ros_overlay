@@ -153,6 +153,10 @@ class DockerRepo(DockerRegistryAuth):
         rsp['digest'] = rsp['obj'].headers['Docker-Content-Digest']
         return rsp
 
+    def get_blob(self, digest):
+        spec = "GET /v2/<name>/blobs/<digest>"
+        return self.request(spec, digest=digest)
+
     def delete_image(self, reference):
         if not reference.startswith('sha256:'):
             # Look up digest using name
@@ -164,6 +168,14 @@ class DockerRepo(DockerRegistryAuth):
         # name = repo; reference = image digest
         return self.request(spec, reference=reference, access='delete,pull,push')
 
+    def get_labels(self, reference):
+        img = self.get_image(reference)
+        config_digest = img.get('config',dict()).get('digest',None)
+        if config_digest is None:
+            return None
+        config_blob = self.get_blob(config_digest)
+        labels = config_blob.get('config',dict()).get('Labels')
+        return labels
 
 if __name__ == "__main__":
     repo = os.environ.get('DOCKER_REPO','tormach/ros')
