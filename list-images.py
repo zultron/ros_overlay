@@ -29,21 +29,36 @@ class DockerRegistryAuth(object):
         self.__dict__.update(self._params)
 
     def get_config_from_environment(self):
-        if 'service_config' in self._params:
-            return self._params['service_config']
-
         DOCKERCFG_str = os.environ['DOCKERCFG']
         DOCKERCFG = json.loads(DOCKERCFG_str)
         for data in DOCKERCFG.values():
             if data['serveraddress'] == self.api_domain:
-                self._params['service_config'] = data
                 return data
+
+        raise RuntimeError("Couldn't find config for %s API" % self.api_domain)
+
+    def get_config_from_file(self):
+
+        config = os.path.join(os.environ['HOME'], '.docker/config.json')
+        with open(config, 'r') as f:
+            DOCKERCFG = json.load(f)
+        for data in DOCKERCFG['auths'].values():
+            if 'auth' in data:
+                return data['auth']
 
         raise RuntimeError("Couldn't find config for %s API" % self.api_domain)
 
     @property
     def auth(self):
-        return self.get_config_from_environment()['auth']
+        if 'service_config' in self._params:
+            return self._params['service_config']
+        else:
+            if 'DOCKERCFG' in os.environ:
+                res = self.get_config_from_environment()['auth']
+            else:
+                res = self.get_config_from_file()
+            self._params['service_config'] = res
+            return res
 
     @property
     def auth_basic_headers(self):
@@ -151,5 +166,6 @@ class DockerRepo(DockerRegistryAuth):
 
 
 if __name__ == "__main__":
-    for t in DockerRepo(os.environ['DOCKER_REPO']).get_tags():
+    repo = os.environ.get('DOCKER_REPO','tormach/ros')
+    for t in DockerRepo(repo).get_tags():
         print t
