@@ -178,6 +178,6 @@ class DockerRepo(DockerRegistryAuth):
         return labels
 
 if __name__ == "__main__":
-    repo = os.environ.get('DOCKER_REPO','tormach/ros')
+    repo = os.environ.get('DOCKER_REPO')
     for t in DockerRepo(repo).get_tags():
         print t
