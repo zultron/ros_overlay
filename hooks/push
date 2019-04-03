@@ -1,5 +1,5 @@
 #!/bin/bash -xe
 
-. new_image.sh
-
-docker push $NEW_IMAGE
+for IMAGE in $(cat new_images.txt); do
+    docker push $IMAGE
+done

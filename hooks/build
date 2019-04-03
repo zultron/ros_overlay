@@ -3,12 +3,30 @@
 # BASE_REPO should be set in the Docker Hub automated build settings
 #BASE_REPO=
 
-LATEST_TAG=$(DOCKER_REPO=$BASE_REPO ./list-images.py 2>/dev/null | \
-                 sort --version-sort | tail -1 )
+latest_tag() {
+    local TYPE=$1
+    DOCKER_REPO=$BASE_REPO ./list-images.py 2>/dev/null | \
+        sort --version-sort | \
+        grep ".-${TYPE}-" \
+        tail -1
+}
 
-IMAGE_BASE=$BASE_REPO:$LATEST_TAG
-NEW_IMAGE=$DOCKER_REPO:$LATEST_TAG
+# Empty image list
+> new_images.txt
 
-echo NEW_IMAGE=$NEW_IMAGE > new_image.sh
+# Build images
+for TYPE in devel dist; do
+    LATEST_TAG=$(latest_tag $TYPE)
+    # If tag already exists in this repo, skip the build
+    if ./list-images.py | grep -q $LATEST_TAG; then
+        echo "Skipping build of existing tag $LATEST_TAG" >&2
+        continue
+    fi
 
-docker build --build-arg IMAGE_BASE=$IMAGE_BASE -f $DOCKERFILE_PATH -t $NEW_IMAGE .
+    IMAGE_BASE=$BASE_REPO:$LATEST_TAG
+    NEW_IMAGE=$DOCKER_REPO:$LATEST_TAG
+
+    docker build --build-arg IMAGE_BASE=$IMAGE_BASE -f $DOCKERFILE_PATH -t $NEW_IMAGE .
+
+    echo $NEW_IMAGE >> new_images.txt
+done
