@@ -4,10 +4,9 @@
 #BASE_REPO=
 
 latest_tag() {
-    local TYPE=$1
     DOCKER_REPO=$BASE_REPO ./list-images.py 2>/dev/null | \
         sort --version-sort | \
-        grep ".-${TYPE}-" \
+        grep ".-devel-" | \
         tail -1
 }
 
@@ -15,18 +14,16 @@ latest_tag() {
 > new_images.txt
 
 # Build images
-for TYPE in devel dist; do
-    LATEST_TAG=$(latest_tag $TYPE)
-    # If tag already exists in this repo, skip the build
-    if ./list-images.py | grep -q $LATEST_TAG; then
-        echo "Skipping build of existing tag $LATEST_TAG" >&2
-        continue
-    fi
+LATEST_TAG=$(latest_tag)
+# If tag already exists in this repo, skip the build
+if ./list-images.py | grep -q $LATEST_TAG; then
+    echo "Skipping build of existing tag $LATEST_TAG" >&2
+    continue
+fi
 
-    IMAGE_BASE=$BASE_REPO:$LATEST_TAG
-    NEW_IMAGE=$DOCKER_REPO:$LATEST_TAG
+IMAGE_BASE=$BASE_REPO:$LATEST_TAG
+NEW_IMAGE=$DOCKER_REPO:$LATEST_TAG
 
-    docker build --build-arg IMAGE_BASE=$IMAGE_BASE -f $DOCKERFILE_PATH -t $NEW_IMAGE .
+docker build --build-arg IMAGE_BASE=$IMAGE_BASE -f $DOCKERFILE_PATH -t $NEW_IMAGE .
 
-    echo $NEW_IMAGE >> new_images.txt
-done
+echo $NEW_IMAGE >> new_images.txt
