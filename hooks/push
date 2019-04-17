@@ -2,4 +2,6 @@
 
 for IMAGE in $(cat new_images.txt); do
     docker push $IMAGE
+    docker tag $IMAGE $DOCKER_REPO:latest
+    docker push $DOCKER_REPO:latest
 done
