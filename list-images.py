@@ -6,7 +6,7 @@
 #   https://docs.docker.com/registry/spec/api/
 #   https://docs.docker.com/registry/spec/auth/token/
 
-import os, json, base64, requests, time
+import os, sys, json, base64, requests, time, re
 
 class DockerRegistryAuth(object):
     _auth = dict()
@@ -177,7 +177,22 @@ class DockerRepo(DockerRegistryAuth):
         labels = config_blob.get('config',dict()).get('Labels')
         return labels
 
+    tag_re = re.compile(r'^([^-]*)-([^-]*)-([^-]*)-([0-9]*)\.([0-9a-f]*)$')
+    def cmp(self, x, y):
+        mx = self.tag_re.match(x)
+        if mx is None:
+            sys.stderr.write("Invalid tag format '%s'\n" % x)
+            return -1
+        my = self.tag_re.match(y)
+        if my is None:
+            sys.stderr.write("Invalid tag format '%s'\n" % y)
+            return 1
+        return cmp(mx.group(4), my.group(4))
+
+    def get_tags_sorted(self):
+        return sorted(self.get_tags(), cmp=self.cmp)
+
 if __name__ == "__main__":
     repo = os.environ.get('DOCKER_REPO')
-    for t in DockerRepo(repo).get_tags():
+    for t in DockerRepo(repo).get_tags_sorted():
         print t

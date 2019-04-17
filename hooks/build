@@ -4,9 +4,8 @@
 #BASE_REPO=
 
 latest_tag() {
-    DOCKER_REPO=$BASE_REPO ./list-images.py 2>/dev/null | \
-        sort --version-sort | \
-        grep ".-devel-" | \
+    DOCKER_REPO=$BASE_REPO ./list-images.py | \
+        grep -e ".-devel-" -e ".-tending-" | \
         tail -1
 }
 
